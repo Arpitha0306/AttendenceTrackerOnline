@@ -1,0 +1,247 @@
+ @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgb(0 0 0 / 0.1);
+    overflow-x: auto;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Controls Section */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .controls > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #34495e;
+  }
+
+  input[type="text"], input[type="month"] {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus, input[type="month"]:focus {
+    outline: none;
+    border-color: #2980b9;
+  }
+
+  button.add-student {
+    margin-top: 0.5rem;
+    cursor: pointer;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  button.add-student:hover {
+    background-color: #1e8449;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background-color: #2980b9;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.3rem;
+    text-align: center;
+    font-size: 0.85rem;
+    min-width: 28px;
+  }
+
+  th.name, td.name {
+    min-width: 150px;
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background-color: #f4f7fb;
+    font-weight: 700;
+    color: #2c3e50;
+    z-index: 5;
+    padding-left: 0.8rem;
+  }
+
+  tbody tr:hover td.name {
+    background-color: #d6eaf8;
+  }
+
+  /* Status cells */
+  td.status-cell {
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background-color 0.3s ease;
+    position: relative;
+  }
+  td.status-cell[aria-disabled="true"] {
+    cursor: not-allowed;
+    background-color: #f5f5f5 !important;
+    color: #aaa !important;
+  }
+
+  /* Status colors */
+  td.status-present {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  td.status-absent {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  td.status-late {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  td.status-none {
+    background-color: transparent;
+    color: #444;
+  }
+
+  /* Sunday cells with diagonal pattern */
+  td.sunday-cell {
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        #f8d7da,
+        #f8d7da 8px,
+        #f5c6cb 8px,
+        #f5c6cb 16px
+      );
+    color: #721c24 !important;
+  }
+
+  /* Reset Buttons */
+  button.reset-student, button.reset-all {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button.reset-student:hover, button.reset-all:hover {
+    background-color: #922b21;
+  }
+
+  /* Save button */
+  button#saveBtn {
+    cursor: pointer;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin: 1rem auto 0;
+    display: block;
+    transition: background-color 0.3s ease;
+  }
+  button#saveBtn:hover {
+    background-color: #235a85;
+  }
+
+  /* Legend */
+  .legend {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.7rem;
+    font-weight: 600;
+    color: #555;
+    flex-wrap: wrap;
+  }
+  .legend .item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .legend .color-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1.5px solid #ccc;
+  }
+  .color-present { background-color: #d4edda; border-color: #c3e6cb;}
+  .color-absent { background-color: #f8d7da; border-color: #f5c6cb;}
+  .color-late { background-color: #fff3cd; border-color: #ffeeba;}
+
+  /* Scroll hints for large tables */
+  .scroll-hint {
+    text-align: center;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: #777;
+  }
+
+  /* Tooltips for reset buttons */
+  button.reset-student[title], button.reset-all[title] {
+    position: relative;
+  }
+  button.reset-student[title]:hover::after,
+  button.reset-all[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #444;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0.9;
+  }

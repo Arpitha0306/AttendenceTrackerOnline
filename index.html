@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced Attendance Tracker</title>
+  <link rel="stylesheet" href="attendence.css">
+</head>
+
+<body>
+  <div class="container" role="main" aria-label="Advanced Attendance Tracker">
+    <h1>Attendance Tracker</h1>
+
+    <section class="controls" aria-label="User Controls">
+
+      <div>
+        <label for="studentNameInput">Add Student</label>
+        <input type="text" id="studentNameInput" placeholder="Enter student full name"
+          aria-describedby="addStudentHelp" />
+        <button class="add-student" id="addStudentBtn" aria-label="Add student">Add Student</button>
+        <small id="addStudentHelp" style="color:#777;">Add student name and press Add</small>
+      </div>
+
+      <div>
+        <label for="monthSelector">Select Month and Year</label>
+        <input type="month" id="monthSelector" aria-live="polite" aria-label="Select month and year for attendance" />
+      </div>
+
+      <div style="align-self:center;">
+        <button id="saveBtn" aria-label="Save all attendance data">Save Attendance</button>
+        <button id="resetAllBtn" class="reset-all" aria-label="Reset all attendance data"
+          title="Clear all attendance records for all students and days" style="margin-left:10px;">Reset All</button>
+      </div>
+    </section>
+
+    <div class="scroll-hint" aria-live="polite" aria-atomic="true">Scroll horizontally to see all dates, vertically to
+      see all students.</div>
+
+    <table aria-label="Attendance table" id="attendanceTable" tabindex="0">
+      <thead>
+        <tr id="tableHeaderRow">
+          <th class="name" scope="col">Student Name</th>
+          <!-- Dates inserted dynamically -->
+          <th scope="col" aria-label="Reset attendance" style="min-width:70px;">Reset</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- Student rows added dynamically -->
+      </tbody>
+    </table>
+
+    <div class="legend" aria-label="Attendance legend">
+      <div class="item">
+        <div class="color-box color-present"></div>Present
+      </div>
+      <div class="item">
+        <div class="color-box color-absent"></div>Absent
+      </div>
+      <div class="item">
+        <div class="color-box color-late"></div>Late
+      </div>
+    
+    </div>
+
+    <section aria-label="Attendance statistics" style="margin-top:1.5rem;">
+      <h2 style="text-align:center; color:#34495e; margin-bottom:0.5rem;">Statistics</h2>
+      <div id="statsArea"
+        style="max-width:400px; margin: 0 auto; text-align:center; font-weight:600; font-size:1.1rem; color:#2c3e50;">
+        Loading stats...
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let students = [];
+
+    let statuses = ['none', 'present', 'absent', 'late'];
+    let statusClassMap = { none: 'status-none', present: 'status-present', absent: 'status-absent', late: 'status-late' };
+
+    let studentNameInput = document.getElementById('studentNameInput');
+    let addStudentBtn = document.getElementById('addStudentBtn');
+    let monthSelector = document.getElementById('monthSelector');
+    let saveBtn = document.getElementById('saveBtn');
+    let resetAllBtn = document.getElementById('resetAllBtn');
+    let tableHeaderRow = document.getElementById('tableHeaderRow');
+    let tableBody = document.getElementById('tableBody');
+    let statsArea = document.getElementById('statsArea');
+
+    let attendanceStore = {}, currentYearMonth = null, year = 0, month = 0, daysInMonth = 0, sundays = new Set();
+    const STORAGE_KEY_PREFIX = 'attendanceTrackerData-';
+
+    function updateCurrentMonth() {
+      [year, month] = monthSelector.value.split('-').map(Number);
+      month--;
+      currentYearMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
+      daysInMonth = new Date(year, month + 1, 0).getDate();
+      sundays = new Set(Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1).getDay() === 0 ? i + 1 : null).filter(Boolean));
+    }
+
+    function createHeaderRow() {
+      tableHeaderRow.innerHTML = '<th>Name</th>' + Array.from({ length: daysInMonth }, (_, i) => `<th class='${sundays.has(i + 1) ? 'sunday' : ''}'>${i + 1}</th>`).join('');
+    }
+
+    function createStudentRow(student) {
+      let tr = document.createElement('tr');
+      tr.innerHTML = `<td>${student}</td>` + Array.from({ length: daysInMonth }, (_, i) => {
+        let day = i + 1, key = `${currentYearMonth}-${student}-${day}`, status = attendanceStore[key] || 'none';
+        let classList = `status ${statusClassMap[status]} ${sundays.has(day) ? 'sunday' : ''}`;
+        return `<td class='${classList}' data-student='${student}' data-day='${day}' data-status='${status}'>${status !== 'none' ? status[0].toUpperCase() : ''}</td>`;
+      }).join('');
+      tableBody.appendChild(tr);
+    }
+
+    function refreshTable() {
+      updateCurrentMonth();
+      createHeaderRow();
+      tableBody.innerHTML = '';
+      students.forEach(createStudentRow);
+      Array.from(tableBody.querySelectorAll('td[data-student]')).forEach(td => {
+        td.addEventListener('click', () => {
+          let key = `${currentYearMonth}-${td.dataset.student}-${td.dataset.day}`;
+          let current = td.dataset.status, next = statuses[(statuses.indexOf(current) + 1) % statuses.length];
+          td.dataset.status = next;
+          td.textContent = next !== 'none' ? next[0].toUpperCase() : '';
+          td.className = `status ${statusClassMap[next]}${sundays.has(+td.dataset.day) ? ' sunday' : ''}`;
+          attendanceStore[key] = next;
+        });
+      });
+    }
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY_PREFIX + currentYearMonth, JSON.stringify({ students, attendance: attendanceStore }));
+    }
+
+    function loadFromStorage() {
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY_PREFIX + currentYearMonth) || '{}');
+      students = data.students || [];
+      attendanceStore = data.attendance || {};
+    }
+
+    function updateStats() {
+      statsArea.innerHTML = '<h3>Attendance Summary</h3><table><tr><th>Name</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th></tr>' + students.map(s => {
+        let p = 0, a = 0, l = 0, t = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+          let st = attendanceStore[`${currentYearMonth}-${s}-${d}`];
+          if (st && st !== 'none') {
+            t++;  // increment total for any non-none status
+            if (st === 'present') p++;
+            else if (st === 'absent') a++;
+            else if (st === 'late') l++;
+          }
+        }
+        return `<tr><td>${s}</td><td>${p}</td><td>${a}</td><td>${l}</td><td>${t}</td></tr>`;
+      }).join('') + '</table>';
+    }
+
+    addStudentBtn.addEventListener('click', () => {
+      let name = studentNameInput.value.trim();
+      if (name && !students.includes(name)) {
+        students.push(name);
+        createStudentRow(name);
+        refreshTable();
+        studentNameInput.value = '';
+      }
+    });
+
+    monthSelector.addEventListener('change', () => {
+      loadFromStorage();
+      refreshTable();
+      updateStats();
+    });
+
+    saveBtn.addEventListener('click', () => {
+      saveToStorage();
+      updateStats();
+      alert('Attendance saved!');
+    });
+
+    resetAllBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset all data for this month?')) {
+        localStorage.removeItem(STORAGE_KEY_PREFIX + currentYearMonth);
+        students = [];
+        attendanceStore = {};
+        refreshTable();
+        updateStats();
+      }
+    });
+
+    (function initialize() {
+      let now = new Date();
+      let thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      monthSelector.value = thisMonth;
+      loadFromStorage();
+      refreshTable();
+      updateStats();
+    })();
+
+    td.addEventListener('click', () => {
+      let currentStatus = td.dataset.status;
+      let newStatusIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
+      let newStatus = statuses[newStatusIndex];
+      td.dataset.status = newStatus;
+      td.textContent = newStatus === 'none' ? '' : newStatus[0].toUpperCase();
+      td.className = `status ${statusClassMap[newStatus]}`;
+      attendanceStore[key] = newStatus;
+      updateStats(); // <- add this line
+    });
+
+  </script>
+
+</body>
+
+</html>
