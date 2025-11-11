@@ -1,0 +1,39 @@
+String s="hello";
+
+1. sort the String // ehllo
+2.reverse the sorted string  // ollhe
+3.rearrange the reversed string in orginal order //hello
+
+public static void main (String[] args){
+    String s="hello";
+    char[] arr=s.toCharArray();
+
+    //sorting
+    for(int i=0;i<i.arr.length-1;i++){
+        for(int j=0;j<arr.length-1;j++){
+            if(arr[j]>arr[j-1]){
+                char temp=arr[j];
+                arr[j]=arr[j+1];
+                arr[j+1]=temp;
+            }
+
+        }
+    }
+
+    //reversing  ehllo
+    for(int i=0;j=arr.length-1;i<j;i++;j--){
+        char temp=arr[i];
+        arr[i]=arr[j];
+        arr[j]=temp;
+
+    }
+
+    //rearrange //ollhe
+    
+    char[] original=new char[chars.length];
+    for(int i=0;i<char.length;i++){
+        original[i]=chars[i];
+
+    } 
+
+}
